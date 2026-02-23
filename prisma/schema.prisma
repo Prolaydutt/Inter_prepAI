@@ -1,0 +1,63 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  username       String    @unique
+  hashedPassword String
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+
+  // One user can have many interview sessions
+  sessions       InterviewSession[]
+
+  @@map("users")  // actual table name in PostgreSQL
+}
+
+model Role {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique   // e.g. 'SDE', 'ML_ENGINEER'
+  description String?
+
+  questions   Question[]
+  sessions    InterviewSession[]
+
+  @@map("roles")
+}
+
+model Question {
+  id          Int      @id @default(autoincrement())
+  roleId      Int
+  content     String
+  difficulty  String   @default("medium")  // easy | medium | hard
+  topic       String?  // DSA | System Design | HR | ML
+  idealAnswer String?
+
+  role        Role     @relation(fields: [roleId], references: [id])
+
+  @@map("questions")
+}
+
+model InterviewSession {
+  id                   Int      @id @default(autoincrement())
+  userId               Int
+  roleId               Int
+  status               String   @default("IN_PROGRESS")  // IN_PROGRESS | COMPLETED
+  currentQuestionIndex Int      @default(0)
+  startedAt            DateTime @default(now())
+  endedAt              DateTime?
+
+  user   User @relation(fields: [userId], references: [id])
+  role   Role @relation(fields: [roleId], references: [id])
+
+  @@map("interview_sessions")
+}
