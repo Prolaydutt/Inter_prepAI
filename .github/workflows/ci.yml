@@ -13,10 +13,9 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: interview_test_db
+    image: postgres:15-alpine
+    env_file:
+      - ../.env
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -36,11 +35,11 @@ jobs:
 
       - name: Push DB schema
         env:
-          DATABASE_URL: postgresql://postgres:password@localhost:5432/interview_test_db
+          DATABASE_URL: process.env.DATABASE_URL
         run: npx prisma db push
 
       - name: Run tests
         env:
-          DATABASE_URL: postgresql://postgres:password@localhost:5432/interview_test_db
-          JWT_SECRET: SUPERmankeyto@5482wintheworldCosiambest
+          DATABASE_URL: process.env.DATABASE_URL
+          JWT_SECRET: process.env.JWT_SECRET
         run: npm test

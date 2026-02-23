@@ -4,11 +4,8 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: interview_db
+    env_file:
+      - ../.env
     ports:
       - '5432:5432'
     volumes:
@@ -23,13 +20,9 @@ services:
     build: ..
     restart: unless-stopped
     ports:
-      - '5432:5432'
-    environment:
-      DATABASE_URL: postgresql://postgres:password@postgres:5432/interview_db
-      JWT_SECRET: SUPERmankeyto@5482wintheworldCosiambest
-      JWT_EXPIRES_IN: 30m
-      PORT: 8001
-      NODE_ENV: development
+      - '3001:3001'
+    env_file:
+      - ../.env
     depends_on:
       postgres:
         condition: service_healthy
