@@ -1,4 +1,3 @@
-# .github/workflows/ci.yml
 name: CI Pipeline
 
 on:
@@ -13,9 +12,11 @@ jobs:
 
     services:
       postgres:
-    image: postgres:15-alpine
-    env_file:
-      - ../.env
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: interview_test_db
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -35,11 +36,19 @@ jobs:
 
       - name: Push DB schema
         env:
-          DATABASE_URL: process.env.DATABASE_URL
+          DATABASE_URL: postgresql://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/interview_test_db
         run: npx prisma db push
 
       - name: Run tests
         env:
-          DATABASE_URL: process.env.DATABASE_URL
-          JWT_SECRET: process.env.JWT_SECRET
+          DATABASE_URL: postgresql://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/interview_test_db
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_EXPIRES_IN: 30m
+          PORT: 8001
+          NODE_ENV: test
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+          OPENAI_EMBEDDING_MODEL: ${{ secrets.OPENAI_EMBEDDING_MODEL }}
+          REDIS_URL: redis://localhost:6379
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
         run: npm test
