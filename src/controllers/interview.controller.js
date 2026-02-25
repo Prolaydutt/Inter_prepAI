@@ -1,6 +1,7 @@
 // src/controllers/interview.controller.js
 const prisma = require("../config/prisma");
 const { createError } = require("../middleware/error.middleware");
+const { generateQuestion } = require("../services/llm.service");
 
 // ── START INTERVIEW ───────────────────────────────────────────────────────
 const startInterview = async (req, res, next) => {
@@ -106,4 +107,56 @@ const getMySessions = async (req, res, next) => {
   }
 };
 
-module.exports = { startInterview, getNextQuestion, getMySessions };
+
+// ── AI QUESTION GENERATOR ─────────────────────────────────────────────────
+const getAIQuestion = async (req, res, next) => {
+  try {
+    const { sessionId } = req.params;
+    const userId = req.user.id;
+
+    // Load session
+    const session = await prisma.interviewSession.findFirst({
+      where: { id: parseInt(sessionId), userId },
+      include: { role: true }
+    });
+    if (!session) throw createError('Session not found', 404);
+
+    // Topic rotation — cycles through topics based on question index
+    const topics = {
+      SDE:         ['DSA', 'System Design', 'OOP', 'Databases', 'OS Concepts'],
+      ML_ENGINEER: ['ML Theory', 'Deep Learning', 'Statistics', 'Model Deployment'],
+      FRONTEND:    ['JavaScript', 'React', 'CSS', 'Performance', 'Testing'],
+      BACKEND:     ['APIs', 'Databases', 'Caching', 'Security', 'Microservices'],
+    };
+
+    const roleTopics = topics[session.role.name] || ['General'];
+    const topic = roleTopics[session.currentQuestionIndex % roleTopics.length];
+    const difficulty = session.currentQuestionIndex < 2 ? 'easy'
+                     : session.currentQuestionIndex < 5 ? 'medium' : 'hard';
+
+    // Generate question (cached in Redis automatically)
+    const aiQuestion = await generateQuestion(session.role.name, topic, difficulty);
+
+    // Advance question index
+    await prisma.interviewSession.update({
+      where: { id: parseInt(sessionId) },
+      data: { currentQuestionIndex: session.currentQuestionIndex + 1 }
+    });
+
+    res.json({
+      success: true,
+      questionNumber: session.currentQuestionIndex + 1,
+      topic,
+      difficulty,
+      question: aiQuestion.question,
+      // Don't send idealAnswer to frontend — only used for scoring
+    });
+  } catch (err) { next(err); }
+};
+
+// Add to module.exports:
+ module.exports = { startInterview, getNextQuestion, getMySessions, getAIQuestion };
+
+
+
+//module.exports = { startInterview, getNextQuestion, getMySessions };

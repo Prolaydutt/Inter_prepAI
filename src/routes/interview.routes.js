@@ -5,6 +5,7 @@ const {
   startInterview,
   getNextQuestion,
   getMySessions,
+  getAIQuestion,
 } = require("../controllers/interview.controller");
 const { z } = require("zod");
 const { validate } = require("../validators/auth.validator");
@@ -25,10 +26,15 @@ router.use(protect);
 // POST /api/interview/start
 router.post("/start", validate(startSchema), startInterview);
 
+// GET /api/interview/:sessionId/ai-question
+router.get("/:sessionId/ai-question", getAIQuestion);
+
 // GET /api/interview/:sessionId/next-question
 router.get("/:sessionId/next-question", getNextQuestion);
 
 // GET /api/interview/sessions — view interview history
 router.get("/sessions", getMySessions);
+
+
 
 module.exports = router;

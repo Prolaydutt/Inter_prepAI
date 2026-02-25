@@ -12,7 +12,10 @@
     "db:push": "npx prisma db push",
     "db:seed": "node prisma/seed.js",
     "db:studio": "npx prisma studio",
-    "test": "jest --forceExit"
+    "test": "jest --forceExit",
+    "docker:up": "docker compose -f infra/docker-compose.yml up -d",
+    "docker:down": "docker compose -f infra/docker-compose.yml down",
+    "docker:logs": "docker compose -f infra/docker-compose.yml logs -f"
   },
   "repository": {
     "type": "git",
@@ -28,18 +31,25 @@
   "homepage": "https://github.com/Prolaydutt/inter_prepAI#readme",
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
+    "form-data": "^4.0.5",
+    "groq-sdk": "^0.37.0",
     "helmet": "^8.1.0",
+    "ioredis": "^5.9.3",
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "openai": "^6.24.0",
     "prisma": "^5.22.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/multer": "^2.0.0",
     "jest": "^30.2.0",
     "nodemon": "^3.1.14",
     "supertest": "^7.2.2"

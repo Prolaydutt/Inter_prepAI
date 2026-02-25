@@ -58,6 +58,25 @@ model InterviewSession {
 
   user   User @relation(fields: [userId], references: [id])
   role   Role @relation(fields: [roleId], references: [id])
+  answers  InterviewAnswer[]
 
   @@map("interview_sessions")
 }
+
+model InterviewAnswer {
+  id           Int      @id @default(autoincrement())
+  sessionId    Int
+  questionText String
+  transcript   String   // raw text from Whisper
+  audioPath    String?  // path to stored audio file
+  score        Float?   // cosine similarity score (added in Week 6)
+  feedback     String?  // AI feedback (added in Week 6)
+  createdAt    DateTime @default(now())
+
+  session      InterviewSession @relation(fields: [sessionId], references: [id])
+
+  @@map("interview_answers")
+}
+
+// Also add this line inside InterviewSession model:
+// answers  InterviewAnswer[]
