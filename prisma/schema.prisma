@@ -19,6 +19,7 @@ model User {
 
   // One user can have many interview sessions
   sessions       InterviewSession[]
+  codeSubmissions CodeSubmission[]
 
   @@map("users")  // actual table name in PostgreSQL
 }
@@ -30,6 +31,7 @@ model Role {
 
   questions   Question[]
   sessions    InterviewSession[]
+  codingProblems  CodingProblem[]
 
   @@map("roles")
 }
@@ -78,5 +80,58 @@ model InterviewAnswer {
   @@map("interview_answers")
 }
 
-// Also add this line inside InterviewSession model:
-// answers  InterviewAnswer[]
+model CodingProblem {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  difficulty  String   @default("medium")  // easy | medium | hard
+  topic       String?  // DSA | Arrays | Trees | DP
+  roleId      Int?
+  timeLimit   Int      @default(5000)       // milliseconds
+  memoryLimit Int      @default(128)        // MB
+  starterCode Json                          // { python: "...", javascript: "...", cpp: "..." }
+  createdAt   DateTime @default(now())
+
+  testCases   TestCase[]
+  submissions CodeSubmission[]
+  role        Role?    @relation(fields: [roleId], references: [id])
+
+  @@map("coding_problems")
+}
+
+model TestCase {
+  id        Int    @id @default(autoincrement())
+  problemId Int
+  input     String
+  expected  String
+  isHidden  Boolean @default(true)   // hidden = not shown to user
+  points    Int     @default(10)
+
+  problem   CodingProblem @relation(fields: [problemId], references: [id])
+
+  @@map("test_cases")
+}
+
+model CodeSubmission {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  sessionId       Int?
+  problemId       Int
+  language        String   // python | javascript | cpp
+  code            String
+  status          String   @default("PENDING")  // PENDING | RUNNING | ACCEPTED | WRONG_ANSWER | TLE | ERROR
+  score           Float?
+  passedCases     Int      @default(0)
+  totalCases      Int      @default(0)
+  runtime         Int?     // milliseconds
+  memoryUsed      Int?     // MB
+  complexityScore String?  // O(n) | O(n^2) | O(log n)
+  errorMessage    String?
+  createdAt       DateTime @default(now())
+
+  user    User          @relation(fields: [userId], references: [id])
+  problem CodingProblem @relation(fields: [problemId], references: [id])
+
+  @@map("code_submissions")
+}
+

@@ -31,9 +31,13 @@
   "homepage": "https://github.com/Prolaydutt/inter_prepAI#readme",
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@xenova/transformers": "^2.17.2",
+    "acorn": "^8.16.0",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
+    "bull": "^4.16.5",
     "cors": "^2.8.6",
+    "dockerode": "^4.0.9",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
@@ -49,6 +53,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/dockerode": "^4.0.1",
     "@types/multer": "^2.0.0",
     "jest": "^30.2.0",
     "nodemon": "^3.1.14",
