@@ -38,6 +38,7 @@ app.use('/api/interview', require('./routes/interview.routes'));
 app.use("/api/speech", require("./routes/speech.routes"));
 app.use("/api/scoring", require("./routes/scoring.routes"));
 app.use("/api/coding", require("./routes/coding.routes"));
+app.use("/api/proctoring", require("./routes/proctoring.routes"));
 
 // ── Global error handler (must be last)
 app.use(errorHandler);

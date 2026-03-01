@@ -4,6 +4,8 @@ const { runTestCases } = require("../services/testRunner.service");
 const { analyzeComplexity } = require("../services/complexity.service");
 const { createError } = require("../middleware/error.middleware");
 const { scanCode } = require("../services/codeSecurity.service");
+const { checkCodeSimilarity } = require("../services/codeSimilarity.service");
+
 
 // ── GET ALL PROBLEMS ──────────────────────────────────────────────────────
 const getProblems = async (req, res, next) => {
@@ -137,6 +139,29 @@ const submitCode = async (req, res, next) => {
         complexityScore: complexity.complexity,
       },
     });
+    checkCodeSimilarity(code, problem.title)
+      .then(async (similarityScore) => {
+        if (similarityScore > 0 && req.body.sessionId) {
+          // Log as a proctoring event if similarity is high
+          if (similarityScore > 70) {
+            await prisma.proctoringEvent
+              .create({
+                data: {
+                  sessionId: parseInt(req.body.sessionId),
+                  userId: req.user.id,
+                  eventType: "PASTE_SPIKE",
+                  metadata: {
+                    source: "code_similarity",
+                    similarityScore,
+                    note: "Code highly similar to known solution",
+                  },
+                },
+              })
+              .catch(() => {}); // Ignore errors — non-critical
+          }
+        }
+      })
+      .catch(() => {}); // Never block the main response
 
     res.json({
       success: true,
